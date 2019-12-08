@@ -1,0 +1,3 @@
+[submodule "native/sqlite"]
+	path = native/sqlite
+	url = https://github.com/azadkuh/sqlite-amalgamation
