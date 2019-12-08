@@ -68,6 +68,7 @@
         'native/nsql/dprintf.c',
         'native/nsql/error.c',
         'native/nsql/module.c',
+        'native/nsql/str.c',
       ]
     }
   ]
