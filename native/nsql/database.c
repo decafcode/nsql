@@ -19,7 +19,10 @@ static napi_value nsql_database_constructor(napi_env env,
 
 static void nsql_database_destructor(napi_env env, void *ptr, void *hint);
 
-static const napi_property_descriptor nsql_database_desc[] = {};
+static napi_value nsql_database_close(napi_env env, napi_callback_info ctx);
+
+static const napi_property_descriptor nsql_database_desc[] = {
+    {.utf8name = "close", .method = nsql_database_close}};
 
 napi_status nsql_database_define_class(napi_env env, napi_value *out) {
   napi_status r;
@@ -170,4 +173,41 @@ static void nsql_database_destructor(napi_env env, void *ptr, void *hint) {
   }
 
   free(self);
+}
+
+static napi_value nsql_database_close(napi_env env, napi_callback_info ctx) {
+  struct nsql_database *self;
+  napi_value nself;
+  napi_status r;
+  int sqlr;
+
+  r = napi_get_cb_info(env, ctx, NULL, NULL, &nself, NULL);
+
+  if (r != napi_ok) {
+    nsql_report_error(env, r);
+
+    goto end;
+  }
+
+  r = napi_unwrap(env, nself, (void **)&self);
+
+  if (r != napi_ok) {
+    nsql_report_error(env, r);
+
+    goto end;
+  }
+
+  sqlr = sqlite3_close_v2(self->db);
+
+  if (sqlr != SQLITE_OK) {
+    nsql_throw_sqlite_error(env, sqlr, NULL);
+
+    goto end;
+  }
+
+  self->db = NULL;
+  nsql_dprintf("%s\n", __func__);
+
+end:
+  return nsql_return(env, r, NULL);
 }

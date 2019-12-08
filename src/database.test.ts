@@ -18,3 +18,12 @@ describe("constructor", function() {
     expect(() => new Database("/does/not/exist")).toThrow();
   });
 });
+
+describe("close", function() {
+  test("close handle", function() {
+    const db = new Database(":memory:");
+
+    db.close();
+    db.close();
+  });
+});

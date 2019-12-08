@@ -21,6 +21,16 @@ declare class Database {
    * @param uri Path to a database file, or `:memory:`, or the empty string.
    */
   constructor(uri: string);
+
+  /**
+   * Close the database connection. Calling any methods on a closed database
+   * connection will result in an error (except for `close()`, which can safely
+   * be called multiple times). If any statements that have been prepared for
+   * this connection are still open then the operating system resources
+   * associated with this connection are not released until they are all closed
+   * or garbage collected.
+   */
+  close(): undefined;
 }
 
 export default Database;
