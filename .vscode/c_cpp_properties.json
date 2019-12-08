@@ -1,0 +1,17 @@
+{
+  "configurations": [
+    {
+      "name": "Linux",
+      "includePath": [
+        "${env:HOME}/.cache/node-gyp/12.13.1/include/node",
+        "${workspaceFolder}/native/napi",
+        "${workspaceFolder}/native/sqlite"
+      ],
+      "defines": ["NAPI_EXPERIMENTAL"],
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "c11",
+      "cppStandard": "c++17"
+    }
+  ],
+  "version": 4
+}
