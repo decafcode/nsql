@@ -3,7 +3,14 @@
  *
  * This class cannot be instantiated directly.
  */
-export declare class Statement {}
+export declare class Statement {
+  /**
+   * Close prepared statement. Calling any methods on a closed statement will
+   * result in an error, with the exception of further calls to `close()` which
+   * will have no effect.
+   */
+  close(): undefined;
+}
 
 /**
  * An SQLite database connection.
@@ -31,8 +38,10 @@ declare class Database {
 
   /**
    * Close the database connection. Calling any methods on a closed database
-   * connection will result in an error (except for `close()`, which can safely
-   * be called multiple times). If any statements that have been prepared for
+   * connection will result in an error, with the exception of further calls to
+   * `close()` which will have no effect.
+   *
+   * If any statements that have been prepared for
    * this connection are still open then the operating system resources
    * associated with this connection are not released until they are all closed
    * or garbage collected.
