@@ -9,6 +9,7 @@
 #include "error.h"
 #include "macros.h"
 #include "statement.h"
+#include "str.h"
 
 struct nsql_statement {
   /* SQLite connection object ownership is handled through internal reference
@@ -55,6 +56,84 @@ napi_status nsql_statement_define_class(napi_env env, napi_value *out) {
   *out = nclass;
 
 end:
+  return r;
+}
+
+napi_status nsql_statement_prepare(napi_env env, napi_value nclass, sqlite3 *db,
+                                   napi_value nsql, napi_value *out) {
+  struct nsql_statement *self;
+  char *sql;
+  const char *sql_end;
+  size_t sql_nbytes;
+  napi_valuetype type;
+  napi_value nself;
+  napi_status r;
+  int sqlr;
+
+  assert(db != NULL);
+  assert(out != NULL);
+
+  *out = NULL;
+  sql = NULL;
+
+  r = napi_typeof(env, nsql, &type);
+
+  if (r != napi_ok) {
+    nsql_report_error(env, r);
+
+    goto end;
+  }
+
+  if (type != napi_string) {
+    r = napi_throw_type_error(env, "ERR_INVALID_ARG_TYPE",
+                              "sql: Expected string");
+
+    goto end;
+  }
+
+  r = napi_new_instance(env, nclass, 0, NULL, &nself);
+
+  if (r != napi_ok) {
+    nsql_report_error(env, r);
+
+    goto end;
+  }
+
+  r = napi_unwrap(env, nself, (void **)&self);
+
+  if (r != napi_ok) {
+    nsql_report_error(env, r);
+
+    goto end;
+  }
+
+  r = nsql_get_string(env, nsql, &sql, &sql_nbytes);
+
+  if (r != napi_ok || sql == NULL) {
+    goto end;
+  }
+
+  sqlr = sqlite3_prepare_v2(db, sql, -1, &self->stmt, &sql_end);
+
+  if (sqlr != SQLITE_OK) {
+    r = nsql_throw_sqlite_error(env, sqlr, self->db);
+
+    goto end;
+  }
+
+  if (sql_end != sql + sql_nbytes) {
+    r = napi_throw_error(env, "ERR_INVALID_ARG_VALUE",
+                         "Trailing characters in SQL statement");
+
+    goto end;
+  }
+
+  self->db = db;
+  *out = nself;
+
+end:
+  free(sql);
+
   return r;
 }
 

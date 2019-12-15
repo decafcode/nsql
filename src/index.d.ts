@@ -1,4 +1,11 @@
 /**
+ * An SQLite prepared statement.
+ *
+ * This class cannot be instantiated directly.
+ */
+export declare class Statement {}
+
+/**
  * An SQLite database connection.
  */
 declare class Database {
@@ -44,6 +51,20 @@ declare class Database {
    * @param sql One or more SQL statements.
    */
   exec(sql: string): undefined;
+
+  /**
+   * Prepare an SQL statement.
+   *
+   * A prepared statement may end with a semicolon, although this is not
+   * recommended. If a semicolon is present then it must be the last character
+   * in the input string, otherwise an error will occur.
+   *
+   * Returns a prepared statement object which can be repeatedly invoked with
+   * various bind parameters.
+   *
+   * @param sql SQL statement, possibly including placeholders.
+   */
+  prepare(sql: string): Statement;
 }
 
 export default Database;

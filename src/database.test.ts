@@ -56,3 +56,29 @@ describe("exec", function() {
     db.exec("insert into bar values (1234)");
   });
 });
+
+describe("prepare", function() {
+  test("prepare sql", function() {
+    const db = new Database(":memory:");
+
+    db.prepare("select 1");
+  });
+
+  test("prepare type check", function() {
+    const db = new Database(":memory:");
+
+    expect(() => db.prepare(123 as any)).toThrow();
+  });
+
+  test("prepare invalid sql", function() {
+    const db = new Database(":memory:");
+
+    expect(() => db.prepare("invalid")).toThrow();
+  });
+
+  test("prepare trailing chars", function() {
+    const db = new Database(":memory:");
+
+    expect(() => db.prepare("select 1; ")).toThrow();
+  });
+});
