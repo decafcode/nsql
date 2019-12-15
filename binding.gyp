@@ -65,6 +65,7 @@
         'native/nsql',
       ],
       'sources': [
+        'native/nsql/dprintf.c',
         'native/nsql/module.c',
       ]
     }
