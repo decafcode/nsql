@@ -60,11 +60,15 @@
       'dependencies': [
         'sqlite'
       ],
+      'defines': [
+        'NAPI_EXPERIMENTAL'
+      ],
       'include_dirs': [
         'native/sqlite',
         'native/nsql',
       ],
       'sources': [
+        'native/nsql/bind.c',
         'native/nsql/database.c',
         'native/nsql/dprintf.c',
         'native/nsql/error.c',
