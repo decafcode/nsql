@@ -1,10 +1,12 @@
 #include <assert.h>
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdlib.h>
 
 #include <node_api.h>
 #include <sqlite3.h>
 
+#include "bind.h"
 #include "dprintf.h"
 #include "error.h"
 #include "macros.h"
@@ -33,8 +35,17 @@ static void nsql_statement_destructor(napi_env env, void *ptr, void *hint);
 
 static napi_value nsql_statement_close(napi_env env, napi_callback_info ctx);
 
+static void nsql_statement_reset(struct nsql_statement *self);
+
+static napi_status nsql_statement_exec_preamble(napi_env env,
+                                                napi_callback_info ctx,
+                                                struct nsql_statement **out);
+
+static napi_value nsql_statement_run(napi_env env, napi_callback_info ctx);
+
 static const napi_property_descriptor nsql_statement_desc[] = {
-    {.utf8name = "close", .method = nsql_statement_close}};
+    {.utf8name = "close", .method = nsql_statement_close},
+    {.utf8name = "run", .method = nsql_statement_run}};
 
 napi_status nsql_statement_define_class(napi_env env, napi_value *out) {
   napi_value nclass;
@@ -239,5 +250,114 @@ static napi_value nsql_statement_close(napi_env env, napi_callback_info ctx) {
   nsql_dprintf("%s\n", __func__);
 
 end:
+  return nsql_return(env, r, NULL);
+}
+
+static void nsql_statement_reset(struct nsql_statement *self) {
+  int sqlr;
+
+  if (self == NULL || self->stmt == NULL) {
+    return;
+  }
+
+  sqlr = sqlite3_reset(self->stmt);
+
+  if (sqlr != SQLITE_OK) {
+    nsql_fatal_sqlite_error(sqlr);
+  }
+
+  sqlr = sqlite3_clear_bindings(self->stmt);
+
+  if (sqlr != SQLITE_OK) {
+    nsql_fatal_sqlite_error(sqlr);
+  }
+}
+
+static napi_status nsql_statement_exec_preamble(napi_env env,
+                                                napi_callback_info ctx,
+                                                struct nsql_statement **out) {
+  struct nsql_statement *self;
+  size_t argc;
+  napi_value argv[1];
+  napi_value nself;
+  napi_status r;
+  bool ok;
+
+  assert(out != NULL);
+
+  *out = NULL;
+  self = NULL;
+
+  argc = countof(argv);
+  r = napi_get_cb_info(env, ctx, &argc, argv, &nself, NULL);
+
+  if (r != napi_ok) {
+    nsql_report_error(env, r);
+
+    goto end;
+  }
+
+  r = napi_unwrap(env, nself, (void **)&self);
+
+  if (r != napi_ok) {
+    nsql_report_error(env, r);
+
+    goto end;
+  }
+
+  assert(self != NULL);
+
+  if (self->stmt == NULL) {
+    r = napi_throw_error(env, NULL, "Attempted to execute a closed statement");
+
+    if (r != napi_ok) {
+      nsql_report_error(env, r);
+    }
+
+    goto end;
+  }
+
+  if (argc > 0) {
+    r = nsql_bind(env, argv[0], self->stmt, &ok);
+
+    if (r != napi_ok || !ok) {
+      nsql_statement_reset(self);
+
+      goto end;
+    }
+  }
+
+  *out = self;
+
+end:
+  return r;
+}
+
+static napi_value nsql_statement_run(napi_env env, napi_callback_info ctx) {
+  struct nsql_statement *self;
+  napi_status r;
+  int sqlr;
+
+  self = NULL;
+
+  r = nsql_statement_exec_preamble(env, ctx, &self);
+
+  if (r != napi_ok || self == NULL) {
+    goto end;
+  }
+
+  do {
+    sqlr = sqlite3_step(self->stmt);
+  } while (sqlr == SQLITE_ROW);
+
+  if (sqlr != SQLITE_DONE) {
+    r = nsql_throw_sqlite_error(env, sqlr, self->db);
+
+    goto end;
+  }
+
+end:
+  nsql_statement_reset(self);
+
   return nsql_return(env, r, NULL);
 }

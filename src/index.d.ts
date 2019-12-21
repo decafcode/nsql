@@ -1,7 +1,40 @@
 /**
+ * Bind parameter for an SQL statement.
+ *
+ * SQLite types are mapped to JavaScript types as follows:
+ *
+ * | SQLite    | JavaScript    |
+ * |-----------|---------------|
+ * | `NULL`    | `null`        |
+ * | `INTEGER` | `bigint`      |
+ * | `REAL`    | `number`      |
+ * | `TEXT`    | `string`      |
+ * | `BLOB`    | `ArrayBuffer` |
+ *
+ * - SQLite `INTEGER`s are 64-bit signed integers. Attempting to bind a BigInt
+ *    whose magnitude is too great to store in a 64-bit signed integer
+ *    representation will result in an error.
+ * - JavaScript `number`s are always bound to statement parameters as double-
+ *    precision floating point values, irrespective of whether or not they have
+ *    a fractional component.
+ */
+export type SqlValue = null | number | bigint | string | ArrayBuffer;
+
+/**
+ * A collection of bind parameters suitable for passing to a prepared statement.
+ * Must be an array of {@link SqlValue} values.
+ */
+export type BindParams = SqlValue[];
+
+/**
  * An SQLite prepared statement.
  *
+ * The methods of this class are used to bind some (possibly zero) parameters
+ * to the prepared statement and then execute the statement.
+ *
  * This class cannot be instantiated directly.
+ *
+ * @see SqlValue
  */
 export declare class Statement {
   /**
@@ -10,6 +43,13 @@ export declare class Statement {
    * will have no effect.
    */
   close(): undefined;
+
+  /**
+   * Execute a statement, returning nothing.
+   *
+   * @param params Bind parameters (see {@link BindParams}).
+   */
+  run(params?: BindParams): undefined;
 }
 
 /**
