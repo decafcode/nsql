@@ -43,6 +43,9 @@ static napi_status nsql_statement_exec_preamble(napi_env env,
 
 static napi_value nsql_statement_run(napi_env env, napi_callback_info ctx);
 
+static napi_status nsql_statement_run_result(napi_env env, sqlite3 *db,
+                                             napi_value *out);
+
 static const napi_property_descriptor nsql_statement_desc[] = {
     {.utf8name = "close", .method = nsql_statement_close},
     {.utf8name = "run", .method = nsql_statement_run}};
@@ -335,10 +338,12 @@ end:
 
 static napi_value nsql_statement_run(napi_env env, napi_callback_info ctx) {
   struct nsql_statement *self;
+  napi_value result;
   napi_status r;
   int sqlr;
 
   self = NULL;
+  result = NULL;
 
   r = nsql_statement_exec_preamble(env, ctx, &self);
 
@@ -356,8 +361,68 @@ static napi_value nsql_statement_run(napi_env env, napi_callback_info ctx) {
     goto end;
   }
 
+  r = nsql_statement_run_result(env, self->db, &result);
+
 end:
   nsql_statement_reset(self);
 
-  return nsql_return(env, r, NULL);
+  return nsql_return(env, r, result);
+}
+
+static napi_status nsql_statement_run_result(napi_env env, sqlite3 *db,
+                                             napi_value *out) {
+  napi_value changes;
+  napi_value rowid;
+  napi_value obj;
+  napi_status r;
+
+  assert(db != NULL);
+  assert(out != NULL);
+
+  *out = NULL;
+
+  r = napi_create_object(env, &obj);
+
+  if (r != napi_ok) {
+    nsql_report_error(env, r);
+
+    goto end;
+  }
+
+  r = napi_create_int32(env, sqlite3_changes(db), &changes);
+
+  if (r != napi_ok) {
+    nsql_report_error(env, r);
+
+    goto end;
+  }
+
+  r = napi_create_bigint_int64(env, sqlite3_last_insert_rowid(db), &rowid);
+
+  if (r != napi_ok) {
+    nsql_report_error(env, r);
+
+    goto end;
+  }
+
+  r = napi_set_named_property(env, obj, "changes", changes);
+
+  if (r != napi_ok) {
+    nsql_report_error(env, r);
+
+    goto end;
+  }
+
+  r = napi_set_named_property(env, obj, "lastInsertRowid", rowid);
+
+  if (r != napi_ok) {
+    nsql_report_error(env, r);
+
+    goto end;
+  }
+
+  *out = obj;
+
+end:
+  return r;
 }

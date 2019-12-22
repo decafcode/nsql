@@ -98,3 +98,33 @@ describe("run", function() {
     expect(() => stmt.run([new Date(0) as any])).toThrow();
   });
 });
+
+describe("run result", function() {
+  test("check result.changes", function() {
+    const db = new Database(":memory:");
+
+    db.exec("create table x (y integer not null)");
+
+    const insert = db.prepare("insert into x values (?)");
+
+    for (const num of [1, 2, 3, 4, 5]) {
+      insert.run([num]);
+    }
+
+    const result = db.prepare("update x set y = -1 where y % 2 = 0").run();
+
+    expect(result.changes).toEqual(2);
+  });
+
+  test("check result.lastInsertRowId", function() {
+    const db = new Database(":memory:");
+
+    // Type INTEGER PRIMARY KEY makes `y` act as the ROWID for this table:
+    // https://sqlite.org/lang_createtable.html#rowid
+    db.exec("create table x (y integer primary key not null)");
+
+    const result = db.prepare("insert into x values (?)").run([1234n]);
+
+    expect(result.lastInsertRowid).toEqual(1234n);
+  });
+});

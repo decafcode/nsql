@@ -26,6 +26,15 @@ export type SqlValue = null | number | bigint | string | ArrayBuffer;
  */
 export type BindParams = SqlValue[];
 
+/** Status information returned from a {@link Statement.run} call. */
+export interface RunResult {
+  /** Number of rows affected */
+  changes: number;
+
+  /** The ROWID value of the last inserted row, if applicable. */
+  lastInsertRowid: bigint;
+}
+
 /**
  * An SQLite prepared statement.
  *
@@ -45,11 +54,11 @@ export declare class Statement {
   close(): undefined;
 
   /**
-   * Execute a statement, returning nothing.
+   * Execute a statement, returning status information.
    *
    * @param params Bind parameters (see {@link BindParams}).
    */
-  run(params?: BindParams): undefined;
+  run(params?: BindParams): RunResult;
 }
 
 /**
