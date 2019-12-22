@@ -27,3 +27,32 @@ describe("close", function() {
     db.close();
   });
 });
+
+describe("exec", function() {
+  test("execute sql", function() {
+    const db = new Database(":memory:");
+
+    db.exec("select 1");
+  });
+
+  test("execute after close does not crash the process", function() {
+    const db = new Database(":memory:");
+
+    db.close();
+    expect(() => db.exec("select 1")).toThrow();
+  });
+
+  test("execute parameter type check", function() {
+    const db = new Database(":memory:");
+
+    expect(() => (db as any).exec()).toThrow();
+    expect(() => db.exec(123 as any)).toThrow();
+  });
+
+  test("execute with semicolons", function() {
+    const db = new Database(":memory:");
+
+    db.exec("create table foo (val integer); create table bar (val integer)");
+    db.exec("insert into bar values (1234)");
+  });
+});

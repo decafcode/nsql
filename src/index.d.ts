@@ -31,6 +31,19 @@ declare class Database {
    * or garbage collected.
    */
   close(): undefined;
+
+  /**
+   * Execute one SQL statement or multiple SQL statements separated by
+   * semicolons. Results are discarded, and parameter binding is not possible;
+   * use a prepared statement if you need to retrieve results or bind
+   * parameters.
+   *
+   * This function is useful for running a sequence of SQL DDL commands to
+   * initialize or upgrade an application's database schema.
+   *
+   * @param sql One or more SQL statements.
+   */
+  exec(sql: string): undefined;
 }
 
 export default Database;

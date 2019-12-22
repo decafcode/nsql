@@ -21,8 +21,11 @@ static void nsql_database_destructor(napi_env env, void *ptr, void *hint);
 
 static napi_value nsql_database_close(napi_env env, napi_callback_info ctx);
 
+static napi_value nsql_database_exec(napi_env env, napi_callback_info ctx);
+
 static const napi_property_descriptor nsql_database_desc[] = {
-    {.utf8name = "close", .method = nsql_database_close}};
+    {.utf8name = "close", .method = nsql_database_close},
+    {.utf8name = "exec", .method = nsql_database_exec}};
 
 napi_status nsql_database_define_class(napi_env env, napi_value *out) {
   napi_status r;
@@ -209,5 +212,80 @@ static napi_value nsql_database_close(napi_env env, napi_callback_info ctx) {
   nsql_dprintf("%s\n", __func__);
 
 end:
+  return nsql_return(env, r, NULL);
+}
+
+static napi_value nsql_database_exec(napi_env env, napi_callback_info ctx) {
+  struct nsql_database *self;
+  char *sql;
+  size_t argc;
+  napi_valuetype type;
+  napi_value argv[1];
+  napi_value nself;
+  napi_status r;
+  int sqlr;
+
+  sql = NULL;
+
+  /* Get `this` */
+
+  argc = countof(argv);
+  r = napi_get_cb_info(env, ctx, &argc, argv, &nself, NULL);
+
+  if (r != napi_ok) {
+    nsql_report_error(env, r);
+
+    goto end;
+  }
+
+  r = napi_unwrap(env, nself, (void **)&self);
+
+  if (r != napi_ok) {
+    nsql_report_error(env, r);
+
+    goto end;
+  }
+
+  /* Validate and unpack params */
+
+  if (argc < 1) {
+    r = napi_throw_type_error(env, "ERR_INVALID_ARG_TYPE",
+                              "Expected an SQL parameter");
+
+    goto end;
+  }
+
+  r = napi_typeof(env, argv[0], &type);
+
+  if (r != napi_ok) {
+    nsql_report_error(env, r);
+
+    goto end;
+  }
+
+  if (type != napi_string) {
+    r = napi_throw_type_error(env, "ERR_INVALID_ARG_TYPE",
+                              "sql: Expected string");
+
+    goto end;
+  }
+
+  r = nsql_get_string(env, argv[0], &sql, NULL);
+
+  if (r != napi_ok || sql == NULL) {
+    goto end;
+  }
+
+  /* Call through to SQLite */
+
+  sqlr = sqlite3_exec(self->db, sql, NULL, NULL, NULL);
+
+  if (sqlr != SQLITE_OK) {
+    r = nsql_throw_sqlite_error(env, sqlr, self->db);
+  }
+
+end:
+  free(sql);
+
   return nsql_return(env, r, NULL);
 }
