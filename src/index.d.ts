@@ -1,4 +1,11 @@
 /**
+ * SQLite NAPI binding. The {@link Database} class is the default export for
+ * this module.
+ *
+ * @module SQLite
+ */
+
+/**
  * Bind parameter or result set value for an SQL statement.
  *
  * SQLite types are mapped to JavaScript types as follows:
