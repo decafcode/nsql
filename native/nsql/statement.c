@@ -10,6 +10,7 @@
 #include "dprintf.h"
 #include "error.h"
 #include "macros.h"
+#include "result.h"
 #include "statement.h"
 #include "str.h"
 
@@ -46,9 +47,12 @@ static napi_value nsql_statement_run(napi_env env, napi_callback_info ctx);
 static napi_status nsql_statement_run_result(napi_env env, sqlite3 *db,
                                              napi_value *out);
 
+static napi_value nsql_statement_one(napi_env env, napi_callback_info ctx);
+
 static const napi_property_descriptor nsql_statement_desc[] = {
     {.utf8name = "close", .method = nsql_statement_close},
-    {.utf8name = "run", .method = nsql_statement_run}};
+    {.utf8name = "run", .method = nsql_statement_run},
+    {.utf8name = "one", .method = nsql_statement_one}};
 
 napi_status nsql_statement_define_class(napi_env env, napi_value *out) {
   napi_value nclass;
@@ -425,4 +429,58 @@ static napi_status nsql_statement_run_result(napi_env env, sqlite3 *db,
 
 end:
   return r;
+}
+
+static napi_value nsql_statement_one(napi_env env, napi_callback_info ctx) {
+  struct nsql_statement *self;
+  size_t ncols;
+  napi_value *cols;
+  napi_value result;
+  napi_status r;
+  int sqlr;
+
+  self = NULL;
+  cols = NULL;
+  result = NULL;
+
+  r = nsql_statement_exec_preamble(env, ctx, &self);
+
+  if (r != napi_ok || self == NULL) {
+    goto end;
+  }
+
+  sqlr = sqlite3_step(self->stmt);
+
+  switch (sqlr) {
+  case SQLITE_DONE:
+    r = napi_get_undefined(env, &result);
+
+    if (r != napi_ok) {
+      nsql_report_error(env, r);
+    }
+
+    break;
+
+  case SQLITE_ROW:
+    r = nsql_result_get_columns(env, self->stmt, &cols, &ncols);
+
+    if (r != napi_ok) {
+      goto end;
+    }
+
+    r = nsql_result_get_row(env, self->stmt, cols, ncols, &result);
+
+    break;
+
+  default:
+    r = nsql_throw_sqlite_error(env, sqlr, self->db);
+
+    break;
+  }
+
+end:
+  nsql_statement_reset(self);
+  free(cols);
+
+  return nsql_return(env, r, result);
 }

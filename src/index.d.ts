@@ -1,5 +1,5 @@
 /**
- * Bind parameter for an SQL statement.
+ * Bind parameter or result set value for an SQL statement.
  *
  * SQLite types are mapped to JavaScript types as follows:
  *
@@ -25,6 +25,14 @@ export type SqlValue = null | number | bigint | string | ArrayBuffer;
  * Must be an array of {@link SqlValue} values.
  */
 export type BindParams = SqlValue[];
+
+/**
+ * A single row from an SQLite result set. See {@link SqlValue} for the data
+ * type mapping between SQLite values and JavaScript values.
+ */
+export interface ResultRow {
+  [key: string]: SqlValue;
+}
 
 /** Status information returned from a {@link Statement.run} call. */
 export interface RunResult {
@@ -59,6 +67,13 @@ export declare class Statement {
    * @param params Bind parameters (see {@link BindParams}).
    */
   run(params?: BindParams): RunResult;
+
+  /**
+   * Execute a statement, returning a single row or `undefined`.
+   *
+   * @param params Bind parameters (see {@link BindParams}).
+   */
+  one(params?: BindParams): ResultRow | undefined;
 }
 
 /**

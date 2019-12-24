@@ -128,3 +128,137 @@ describe("run result", function() {
     expect(result.lastInsertRowid).toEqual(1234n);
   });
 });
+
+describe("one", function() {
+  test("returns undefined for empty result set", function() {
+    const db = new Database(":memory:");
+    const result = db.prepare("select 1 where 0").one();
+
+    expect(result).toBeUndefined();
+  });
+
+  test("param empty array", function() {
+    const db = new Database(":memory:");
+    const result = db.prepare("select 1.0 as one").one([]);
+
+    expect(result).toEqual({ one: 1.0 });
+  });
+
+  test("returns null", function() {
+    const db = new Database(":memory:");
+    const result = db.prepare("select null as nil").one();
+
+    expect(result).toEqual({ nil: null });
+  });
+
+  test("returns integral number", function() {
+    const db = new Database(":memory:");
+    const result = db.prepare("select 1234. as real").one();
+
+    expect(result).toEqual({ real: 1234 });
+  });
+
+  test("returns fractional number", function() {
+    const db = new Database(":memory:");
+    const result = db.prepare("select 3.14 as real").one();
+
+    // Do I need to do epsilon comparisons here or something? eh whatever
+
+    expect(result).toEqual({ real: 3.14 });
+  });
+
+  test("returns bigint", function() {
+    const db = new Database(":memory:");
+    const result = db.prepare("select 1234 as bigint").one();
+
+    // Jest does not natively support BigInts yet
+
+    expect(result).toHaveProperty("bigint");
+    expect(result!.bigint).toEqual(1234n);
+  });
+
+  test("returns string", function() {
+    const db = new Database(":memory:");
+    const result = db.prepare("select 'Hello, World!' as str").one();
+
+    expect(result).toEqual({ str: "Hello, World!" });
+  });
+
+  test("returns UTF-8 Cyrillic", function() {
+    const db = new Database(":memory:");
+    const result = db.prepare("select 'Здравствуйте' as str").one();
+
+    expect(result).toEqual({ str: "Здравствуйте" });
+  });
+
+  test("returns UTF-8 non-BMP emoji", function() {
+    const db = new Database(":memory:");
+    const result = db.prepare("select '😂' as str").one();
+
+    expect(result).toEqual({ str: "😂" });
+  });
+
+  test("returns BLOB as ArrayBuffer", function() {
+    const db = new Database(":memory:");
+    const result = db.prepare("select x'01020304' as blob").one();
+
+    // Not sure how best to do this in Jest...
+
+    expect(result).toHaveProperty("blob");
+
+    const { blob } = result!;
+
+    expect(blob).toBeInstanceOf(ArrayBuffer);
+
+    const ary = new Uint8Array(blob as ArrayBuffer, 0);
+
+    expect([...ary]).toEqual([1, 2, 3, 4]);
+  });
+
+  test("returns multiple columns", function() {
+    // Leave out the BigInt and ArrayBuffer cases here since they're annoying
+
+    const db = new Database(":memory:");
+    const result = db
+      .prepare("select null as a, 1234. as b, 'hello' as c")
+      .one();
+
+    expect(result).toEqual({ a: null, b: 1234, c: "hello" });
+  });
+});
+
+describe("integer fidelity", function() {
+  test("round-trip large 64-bit integer", function() {
+    const num = 0x1020304050607080n;
+
+    const db = new Database(":memory:");
+    const stmt = db.prepare("select ? as num");
+    const result = stmt.one([num]);
+
+    expect(result!.num).toEqual(num);
+  });
+
+  test("exceed signed int64 limit", function() {
+    // High bit of this positive 64-bit int is set.
+    // This will fit in an unsigned 64-bit int, but not into an unsigned 64-bit
+    // int of the kind that SQLite deals in.
+
+    const num = 0x8070605040302010n;
+
+    const db = new Database(":memory:");
+    const stmt = db.prepare("select ? as num");
+
+    expect(() => stmt.one([num])).toThrow();
+  });
+
+  test("exceed 64-bit storage", function() {
+    // This just doesn't fit into any kind of 64-bit int at all
+
+    const num = 0x102030405060708090n;
+
+    const db = new Database(":memory:");
+    const stmt = db.prepare("select ? as num");
+
+    expect(() => stmt.one([num])).toThrow();
+  });
+});
