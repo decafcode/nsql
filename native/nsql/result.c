@@ -68,6 +68,62 @@ end:
   return r;
 }
 
+napi_status nsql_result_push_row(napi_env env, sqlite3_stmt *stmt,
+                                 napi_value *cols, size_t ncols,
+                                 napi_value array) {
+  napi_handle_scope scope;
+  napi_value row;
+  napi_status r2;
+  napi_status r;
+  uint32_t index;
+
+  assert(stmt != NULL);
+  assert(cols != NULL);
+
+  scope = NULL;
+
+  r = napi_get_array_length(env, array, &index);
+
+  if (r != napi_ok) {
+    nsql_report_error(env, r);
+
+    goto end;
+  }
+
+  r = napi_open_handle_scope(env, &scope);
+
+  if (r != napi_ok) {
+    nsql_report_error(env, r);
+
+    goto end;
+  }
+
+  r = nsql_result_get_row(env, stmt, cols, ncols, &row);
+
+  if (r != napi_ok) {
+    goto end;
+  }
+
+  r = napi_set_element(env, array, index, row);
+
+  if (r != napi_ok) {
+    nsql_report_error(env, r);
+
+    goto end;
+  }
+
+end:
+  if (scope != NULL) {
+    r2 = napi_close_handle_scope(env, scope);
+
+    if (r2 != napi_ok) {
+      nsql_fatal_error(env, r2);
+    }
+  }
+
+  return r;
+}
+
 napi_status nsql_result_get_row(napi_env env, sqlite3_stmt *stmt,
                                 napi_value *cols, size_t ncols,
                                 napi_value *out) {
