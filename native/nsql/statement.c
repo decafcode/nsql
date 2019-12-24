@@ -49,10 +49,13 @@ static napi_status nsql_statement_run_result(napi_env env, sqlite3 *db,
 
 static napi_value nsql_statement_one(napi_env env, napi_callback_info ctx);
 
+static napi_value nsql_statement_all(napi_env env, napi_callback_info ctx);
+
 static const napi_property_descriptor nsql_statement_desc[] = {
     {.utf8name = "close", .method = nsql_statement_close},
     {.utf8name = "run", .method = nsql_statement_run},
-    {.utf8name = "one", .method = nsql_statement_one}};
+    {.utf8name = "one", .method = nsql_statement_one},
+    {.utf8name = "all", .method = nsql_statement_all}};
 
 napi_status nsql_statement_define_class(napi_env env, napi_value *out) {
   napi_value nclass;
@@ -483,4 +486,70 @@ end:
   free(cols);
 
   return nsql_return(env, r, result);
+}
+
+static napi_value nsql_statement_all(napi_env env, napi_callback_info ctx) {
+  struct nsql_statement *self;
+  size_t ncols;
+  napi_value *cols;
+  napi_value result;
+  napi_value out;
+  napi_status r;
+  int sqlr;
+
+  out = NULL;
+  cols = NULL;
+
+  r = nsql_statement_exec_preamble(env, ctx, &self);
+
+  if (r != napi_ok || self == NULL) {
+    goto end;
+  }
+
+  r = napi_create_array(env, &result);
+
+  if (r != napi_ok) {
+    nsql_report_error(env, r);
+
+    goto end;
+  }
+
+  for (;;) {
+    sqlr = sqlite3_step(self->stmt);
+
+    if (sqlr == SQLITE_DONE) {
+      break;
+    }
+
+    if (sqlr != SQLITE_ROW) {
+      r = nsql_throw_sqlite_error(env, sqlr, self->db);
+
+      goto end;
+    }
+
+    /* We need to JavaScriptify the column names before we can process the
+       first row. */
+
+    if (cols == NULL) {
+      r = nsql_result_get_columns(env, self->stmt, &cols, &ncols);
+
+      if (r != napi_ok || cols == NULL) {
+        goto end;
+      }
+    }
+
+    r = nsql_result_push_row(env, self->stmt, cols, ncols, result);
+
+    if (r != napi_ok) {
+      goto end;
+    }
+  }
+
+  out = result;
+
+end:
+  nsql_statement_reset(self);
+  free(cols);
+
+  return nsql_return(env, r, out);
 }

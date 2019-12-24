@@ -277,3 +277,35 @@ describe("named binds", function() {
     expect(result).toEqual({ a: null, b: 1234, c: "hello" });
   });
 });
+
+describe("all", function() {
+  test("return no rows", function() {
+    const db = new Database(":memory:");
+    const result = db.prepare("select 1 where 0").all();
+
+    expect(result).toHaveLength(0);
+  });
+
+  test("return multiple rows", function() {
+    const data = [
+      [3, "three"],
+      [2, "two"],
+      [1, "one"]
+    ];
+
+    const db = new Database(":memory:");
+
+    db.exec("create table test (num real, str text)");
+
+    const stmt = db.prepare("insert into test (num, str) values (?, ?)");
+
+    data.forEach(datum => stmt.run(datum));
+
+    const result = db.prepare("select num, str from test").all();
+
+    expect(result).toHaveLength(3);
+    expect(result).toContainEqual({ num: 1, str: "one" });
+    expect(result).toContainEqual({ num: 2, str: "two" });
+    expect(result).toContainEqual({ num: 3, str: "three" });
+  });
+});

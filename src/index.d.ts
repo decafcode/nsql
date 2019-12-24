@@ -84,6 +84,13 @@ export declare class Statement {
    * @param params Bind parameters (see {@link BindParams}).
    */
   one(params?: BindParams): ResultRow | undefined;
+
+  /**
+   * Execute a statement, returning an array of multiple (possibly zero) rows.
+   *
+   * @param params Bind parameters (see {@link BindParams}).
+   */
+  all(params?: BindParams): ResultRow[];
 }
 
 /**
