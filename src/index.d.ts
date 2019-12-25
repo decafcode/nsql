@@ -91,6 +91,16 @@ export declare class Statement {
    * @param params Bind parameters (see {@link BindParams}).
    */
   all(params?: BindParams): ResultRow[];
+
+  /**
+   * The original SQL used to prepare this statement, including placeholders.
+   *
+   * If the statement has been closed then a dummy string whose value should
+   * not be relied upon is returned.
+   *
+   * This property is primarily provided for diagnostic purposes.
+   */
+  readonly sql: string;
 }
 
 /**

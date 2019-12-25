@@ -51,11 +51,14 @@ static napi_value nsql_statement_one(napi_env env, napi_callback_info ctx);
 
 static napi_value nsql_statement_all(napi_env env, napi_callback_info ctx);
 
+static napi_value nsql_statement_get_sql(napi_env env, napi_callback_info ctx);
+
 static const napi_property_descriptor nsql_statement_desc[] = {
     {.utf8name = "close", .method = nsql_statement_close},
     {.utf8name = "run", .method = nsql_statement_run},
     {.utf8name = "one", .method = nsql_statement_one},
-    {.utf8name = "all", .method = nsql_statement_all}};
+    {.utf8name = "all", .method = nsql_statement_all},
+    {.utf8name = "sql", .getter = nsql_statement_get_sql}};
 
 napi_status nsql_statement_define_class(napi_env env, napi_value *out) {
   napi_value nclass;
@@ -551,5 +554,56 @@ end:
   nsql_statement_reset(self);
   free(cols);
 
+  return nsql_return(env, r, out);
+}
+
+static napi_value nsql_statement_get_sql(napi_env env, napi_callback_info ctx) {
+  const char *str;
+  struct nsql_statement *self;
+  napi_value nself;
+  napi_value out;
+  napi_status r;
+
+  out = NULL;
+
+  r = napi_get_cb_info(env, ctx, NULL, NULL, &nself, NULL);
+
+  if (r != napi_ok) {
+    nsql_report_error(env, r);
+
+    goto end;
+  }
+
+  r = napi_unwrap(env, nself, (void **)&self);
+
+  if (r != napi_ok) {
+    nsql_report_error(env, r);
+
+    goto end;
+  }
+
+  assert(self != NULL);
+
+  if (self->stmt != NULL) {
+    str = sqlite3_sql(self->stmt);
+
+    if (str == NULL) {
+      r = nsql_throw_oom(env);
+
+      goto end;
+    }
+  } else {
+    str = "#CLOSED";
+  }
+
+  r = napi_create_string_utf8(env, str, NAPI_AUTO_LENGTH, &out);
+
+  if (r != napi_ok) {
+    nsql_report_error(env, r);
+
+    goto end;
+  }
+
+end:
   return nsql_return(env, r, out);
 }

@@ -309,3 +309,20 @@ describe("all", function() {
     expect(result).toContainEqual({ num: 3, str: "three" });
   });
 });
+
+describe("sql getter", function() {
+  test("return sql", function() {
+    const db = new Database(":memory:");
+    const stmt = db.prepare("select   123, @abc");
+
+    expect(stmt.sql).toBe("select   123, @abc");
+  });
+
+  test("closed statement", function() {
+    const db = new Database(":memory:");
+    const stmt = db.prepare("select 1");
+
+    stmt.close();
+    expect(typeof stmt.sql).toBe("string");
+  });
+});
