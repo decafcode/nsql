@@ -86,6 +86,18 @@ napi_status nsql_database_define_class(napi_env env, napi_value *out) {
     goto end;
   }
 
+  /* Expose the Statement constructor to JavaScript so that we can add a REPL
+     inspector for it. JS code shouldn't be instantiating it directly though;
+     hopefully the leading underscore will get the point across. */
+
+  r = napi_set_named_property(env, nclass, "_Statement", stmt_nclass);
+
+  if (r != napi_ok) {
+    nsql_report_error(env, r);
+
+    goto end;
+  }
+
   r = napi_add_finalizer(env, nclass, class_, nsql_database_class_destructor,
                          NULL, NULL);
 
