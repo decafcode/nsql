@@ -160,6 +160,17 @@ declare class Database {
    * @param sql SQL statement, possibly including placeholders.
    */
   prepare(sql: string): Statement;
+
+  /**
+   * The absolute path to the file backing this database connection.
+   *
+   * For in-memory or temporary databases the value of this property is the
+   * empty string. If the database has been closed then a dummy string whose
+   * value should not be relied upon is returned.
+   *
+   * This property is primarily provided for diagnostic purposes.
+   */
+  readonly dbFilename: string;
 }
 
 export default Database;

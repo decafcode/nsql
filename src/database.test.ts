@@ -82,3 +82,31 @@ describe("prepare", function() {
     expect(() => db.prepare("select 1; ")).toThrow();
   });
 });
+
+describe("dbName", function() {
+  test("in-memory database", function() {
+    const db = new Database(":memory:");
+
+    expect(db.dbFilename).toBe("");
+  });
+
+  test("temporary file database", function() {
+    const db = new Database("");
+
+    expect(db.dbFilename).toBe("");
+    db.close();
+  });
+
+  test("closed database", function() {
+    const db = new Database(":memory:");
+
+    db.close();
+    expect(typeof db.dbFilename).toBe("string");
+  });
+
+  test("read-only", function() {
+    const db = new Database(":memory:");
+
+    expect(() => ((db as any).dbFilename = "error")).toThrow();
+  });
+});

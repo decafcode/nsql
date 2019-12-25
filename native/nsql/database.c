@@ -33,10 +33,14 @@ static napi_value nsql_database_exec(napi_env env, napi_callback_info ctx);
 
 static napi_value nsql_database_prepare(napi_env env, napi_callback_info ctx);
 
+static napi_value nsql_database_get_db_filename(napi_env env,
+                                                napi_callback_info ctx);
+
 static const napi_property_descriptor nsql_database_desc[] = {
     {.utf8name = "close", .method = nsql_database_close},
     {.utf8name = "exec", .method = nsql_database_exec},
-    {.utf8name = "prepare", .method = nsql_database_prepare}};
+    {.utf8name = "prepare", .method = nsql_database_prepare},
+    {.utf8name = "dbFilename", .getter = nsql_database_get_db_filename}};
 
 napi_status nsql_database_define_class(napi_env env, napi_value *out) {
   struct nsql_database_class *class_;
@@ -417,6 +421,50 @@ static napi_value nsql_database_prepare(napi_env env, napi_callback_info ctx) {
   r = nsql_statement_prepare(env, nclass_stmt, self->db, argv[0], &out);
 
   if (r != napi_ok || out == NULL) {
+    goto end;
+  }
+
+end:
+  return nsql_return(env, r, out);
+}
+
+static napi_value nsql_database_get_db_filename(napi_env env,
+                                                napi_callback_info ctx) {
+  struct nsql_database *self;
+  const char *str;
+  napi_value nself;
+  napi_value out;
+  napi_status r;
+
+  out = NULL;
+
+  r = napi_get_cb_info(env, ctx, NULL, NULL, &nself, NULL);
+
+  if (r != napi_ok) {
+    nsql_report_error(env, r);
+
+    goto end;
+  }
+
+  r = napi_unwrap(env, nself, (void **)&self);
+
+  if (r != napi_ok) {
+    nsql_report_error(env, r);
+
+    goto end;
+  }
+
+  if (self->db != NULL) {
+    str = sqlite3_db_filename(self->db, "main");
+  } else {
+    str = "#CLOSED";
+  }
+
+  r = napi_create_string_utf8(env, str, NAPI_AUTO_LENGTH, &out);
+
+  if (r != napi_ok) {
+    nsql_report_error(env, r);
+
     goto end;
   }
 
