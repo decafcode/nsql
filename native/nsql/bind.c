@@ -14,6 +14,14 @@
 static napi_status nsql_bind_array(napi_env env, napi_value values,
                                    sqlite3_stmt *stmt, bool *ok);
 
+static napi_status nsql_bind_object(napi_env env, napi_value obj,
+                                    sqlite3_stmt *stmt, bool *ok);
+
+static napi_status nsql_bind_get_key(napi_env env, napi_value key,
+                                     sqlite3_stmt *stmt, uint32_t *out);
+
+static napi_status nsql_throw_bad_key(napi_env env, napi_value key);
+
 static napi_status nsql_bind_one(napi_env env, napi_value value,
                                  sqlite3_stmt *stmt, uint32_t ordinal,
                                  bool *ok);
@@ -59,7 +67,7 @@ napi_status nsql_bind(napi_env env, napi_value values, sqlite3_stmt *stmt,
 
   if (type != napi_object) {
     r = napi_throw_type_error(env, "ERR_INVALID_ARG_TYPE",
-                              "Bind parameters must be an array");
+                              "Bind parameters must be an array or object");
 
     goto end;
   }
@@ -72,14 +80,11 @@ napi_status nsql_bind(napi_env env, napi_value values, sqlite3_stmt *stmt,
     goto end;
   }
 
-  if (!is_array) {
-    r = napi_throw_type_error(env, "ERR_INVALID_ARG_TYPE",
-                              "Bind parameters must be an array");
-
-    goto end;
+  if (is_array) {
+    r = nsql_bind_array(env, values, stmt, ok);
+  } else {
+    r = nsql_bind_object(env, values, stmt, ok);
   }
-
-  r = nsql_bind_array(env, values, stmt, ok);
 
   if (r != napi_ok || !*ok) {
     sqlr = sqlite3_clear_bindings(stmt);
@@ -130,6 +135,150 @@ static napi_status nsql_bind_array(napi_env env, napi_value values,
   }
 
   *ok = true;
+
+end:
+  return r;
+}
+
+static napi_status nsql_bind_object(napi_env env, napi_value obj,
+                                    sqlite3_stmt *stmt, bool *ok) {
+  napi_value props;
+  napi_value key;
+  napi_value value;
+  uint32_t ordinal;
+  uint32_t nprops;
+  uint32_t i;
+  napi_status r;
+
+  assert(stmt != NULL);
+  assert(ok != NULL);
+
+  *ok = false;
+
+  r = napi_get_property_names(env, obj, &props);
+
+  if (r != napi_ok) {
+    nsql_report_error(env, r);
+
+    goto end;
+  }
+
+  r = napi_get_array_length(env, props, &nprops);
+
+  if (r != napi_ok) {
+    nsql_report_error(env, r);
+
+    goto end;
+  }
+
+  for (i = 0; i < nprops; i++) {
+    r = napi_get_element(env, props, i, &key);
+
+    if (r != napi_ok) {
+      nsql_report_error(env, r);
+
+      goto end;
+    }
+
+    r = nsql_bind_get_key(env, key, stmt, &ordinal);
+
+    if (r != napi_ok || ordinal == 0) {
+      goto end;
+    }
+
+    r = napi_get_property(env, obj, key, &value);
+
+    if (r != napi_ok) {
+      nsql_report_error(env, r);
+
+      goto end;
+    }
+
+    r = nsql_bind_one(env, value, stmt, ordinal, ok);
+
+    if (r != napi_ok || !*ok) {
+      goto end;
+    }
+  }
+
+  *ok = true;
+
+end:
+  return r;
+}
+
+static napi_status nsql_bind_get_key(napi_env env, napi_value key,
+                                     sqlite3_stmt *stmt, uint32_t *out) {
+  napi_status r;
+  uint32_t ordinal;
+  char *ckey;
+
+  assert(stmt != NULL);
+  assert(out != NULL);
+
+  *out = 0;
+  ckey = NULL;
+
+  r = nsql_get_string(env, key, &ckey, NULL);
+
+  if (r != napi_ok || ckey == NULL) {
+    goto end;
+  }
+
+  ordinal = sqlite3_bind_parameter_index(stmt, ckey);
+
+  if (ordinal == 0) {
+    r = nsql_throw_bad_key(env, key);
+
+    goto end;
+  }
+
+  *out = ordinal;
+
+end:
+  free(ckey);
+
+  return r;
+}
+
+static napi_status nsql_throw_bad_key(napi_env env, napi_value key) {
+  napi_value msg;
+  napi_value error;
+  napi_status r;
+
+  r = napi_create_string_utf8(
+      env, "A named bind parameter is not present in the query",
+      NAPI_AUTO_LENGTH, &msg);
+
+  if (r != napi_ok) {
+    nsql_report_error(env, r);
+
+    goto end;
+  }
+
+  r = napi_create_error(env, NULL, msg, &error);
+
+  if (r != napi_ok) {
+    nsql_report_error(env, r);
+
+    goto end;
+  }
+
+  r = napi_set_named_property(env, error, "name", key);
+
+  if (r != napi_ok) {
+    nsql_report_error(env, r);
+
+    goto end;
+  }
+
+  r = napi_throw(env, error);
+
+  if (r != napi_ok) {
+    nsql_report_error(env, r);
+
+    goto end;
+  }
 
 end:
   return r;

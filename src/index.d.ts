@@ -22,9 +22,19 @@ export type SqlValue = null | number | bigint | string | ArrayBuffer;
 
 /**
  * A collection of bind parameters suitable for passing to a prepared statement.
- * Must be an array of {@link SqlValue} values.
+ * This can either be an array of `SqlValue`s whose values all conform to the
+ * `SqlValue` definition.
+ *
+ * If an array is supplied then its elements will be bound to the statement's
+ * positional parameters (or to named parameters in the order in which they
+ * occur). If an object is supplied then its keys will be bound to the query's
+ * named parameters, and an error will be raised if there are any keys that do
+ * not correspond to a named parameter in the query.
+ *
+ * Please note that the symbol at the start of a bind parameter is considered to
+ * be part of the parameter's name.
  */
-export type BindParams = SqlValue[];
+export type BindParams = SqlValue[] | { [key: string]: SqlValue };
 
 /**
  * A single row from an SQLite result set. See {@link SqlValue} for the data
@@ -134,6 +144,11 @@ declare class Database {
    *
    * Returns a prepared statement object which can be repeatedly invoked with
    * various bind parameters.
+   *
+   * SQLite supports several different kind of bind parameter syntax. The
+   * details can be found on the following page:
+   *
+   * https://sqlite.org/lang_expr.html#varparam
    *
    * @param sql SQL statement, possibly including placeholders.
    */

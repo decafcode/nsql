@@ -262,3 +262,18 @@ describe("integer fidelity", function() {
     expect(() => stmt.one([num])).toThrow();
   });
 });
+
+describe("named binds", function() {
+  test("named binds with one()", function() {
+    // use @ sigils instead of the usual colon here so that it doesn't visually
+    // clash with JavaScript key-value syntax.
+
+    const db = new Database(":memory:");
+    const stmt = db.prepare("select @c as c, @a as a, @b as b");
+    const result = stmt.one({ "@a": null, "@b": 1234, "@c": "hello" });
+
+    // This should effectively round-trip the input
+
+    expect(result).toEqual({ a: null, b: 1234, c: "hello" });
+  });
+});
