@@ -38,7 +38,9 @@ or
 $ yarn add @decafcode/sqlite
 ```
 
-TypeScript definitions with TSDoc comments are included in the package.
+TypeScript definitions with TSDoc comments are included in the package. You may
+also consult the [online copy](https://decafcode.github.io/nsql-doc/) of the
+project's Typedoc documentation output.
 
 # Contributing
 
