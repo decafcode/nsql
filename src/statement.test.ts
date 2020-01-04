@@ -185,10 +185,7 @@ describe("one", function() {
     const db = new Database(":memory:");
     const result = db.prepare("select 1234 as bigint").one();
 
-    // Jest does not natively support BigInts yet
-
-    expect(result).toHaveProperty("bigint");
-    expect(result!.bigint).toEqual(1234n);
+    expect(result).toEqual({ bigint: 1234n });
   });
 
   test("returns string", function() {
@@ -230,14 +227,14 @@ describe("one", function() {
   });
 
   test("returns multiple columns", function() {
-    // Leave out the BigInt and ArrayBuffer cases here since they're annoying
+    // Leave out the ArrayBuffer case here since it's annoying
 
     const db = new Database(":memory:");
     const result = db
-      .prepare("select null as a, 1234. as b, 'hello' as c")
+      .prepare("select null as a, 1234. as b, 'hello' as c, 5678 as d")
       .one();
 
-    expect(result).toEqual({ a: null, b: 1234, c: "hello" });
+    expect(result).toEqual({ a: null, b: 1234, c: "hello", d: 5678n });
   });
 });
 
