@@ -68,11 +68,9 @@ function loadEmployees(path: string, departmentId: bigint): Employee[] {
     objects.push(new Employee(row.id, row.name));
   }
 
-  return objects;
-
   db.close();
 
-  return result;
+  return objects;
 }
 ```
 
