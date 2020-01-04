@@ -10,12 +10,19 @@ describe("constructor", function() {
   });
 
   test("open parameter type check", function() {
-    expect(() => new (Database as any)()).toThrow();
-    expect(() => new Database(123 as any)).toThrow();
+    expect(() => new (Database as any)()).toThrow(
+      expect.objectContaining({ code: "ERR_INVALID_ARG_TYPE" })
+    );
+
+    expect(() => new Database(123 as any)).toThrow(
+      expect.objectContaining({ code: "ERR_INVALID_ARG_TYPE" })
+    );
   });
 
   test("open invalid path", function() {
-    expect(() => new Database("/does/not/exist")).toThrow();
+    expect(() => new Database("/does/not/exist")).toThrow(
+      expect.objectContaining({ code: "SQLITE_CANTOPEN" })
+    );
   });
 });
 
@@ -45,8 +52,13 @@ describe("exec", function() {
   test("execute parameter type check", function() {
     const db = new Database(":memory:");
 
-    expect(() => (db as any).exec()).toThrow();
-    expect(() => db.exec(123 as any)).toThrow();
+    expect(() => (db as any).exec()).toThrow(
+      expect.objectContaining({ code: "ERR_INVALID_ARG_TYPE" })
+    );
+
+    expect(() => db.exec(123 as any)).toThrow(
+      expect.objectContaining({ code: "ERR_INVALID_ARG_TYPE" })
+    );
   });
 
   test("execute with semicolons", function() {
@@ -67,13 +79,17 @@ describe("prepare", function() {
   test("prepare type check", function() {
     const db = new Database(":memory:");
 
-    expect(() => db.prepare(123 as any)).toThrow();
+    expect(() => db.prepare(123 as any)).toThrow(
+      expect.objectContaining({ code: "ERR_INVALID_ARG_TYPE" })
+    );
   });
 
   test("prepare invalid sql", function() {
     const db = new Database(":memory:");
 
-    expect(() => db.prepare("invalid")).toThrow();
+    expect(() => db.prepare("invalid")).toThrow(
+      expect.objectContaining({ code: "SQLITE_ERROR" })
+    );
   });
 
   test("prepare error contains detailed diagnostics", function() {
@@ -85,7 +101,9 @@ describe("prepare", function() {
   test("prepare trailing chars", function() {
     const db = new Database(":memory:");
 
-    expect(() => db.prepare("select 1; ")).toThrow();
+    expect(() => db.prepare("select 1; ")).toThrow(
+      expect.objectContaining({ code: "ERR_INVALID_ARG_VALUE" })
+    );
   });
 });
 

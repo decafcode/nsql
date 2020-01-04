@@ -35,7 +35,9 @@ describe("run", function() {
     const db = new Database(":memory:");
 
     db.exec("create table x (y integer not null)");
-    expect(() => db.exec("insert into x values (null)")).toThrow();
+    expect(() => db.exec("insert into x values (null)")).toThrow(
+      expect.objectContaining({ code: "SQLITE_CONSTRAINT_NOTNULL" })
+    );
   });
 
   test("bind null", function() {
@@ -88,14 +90,18 @@ describe("run", function() {
     const db = new Database(":memory:");
     const stmt = db.prepare("select ?");
 
-    expect(() => stmt.run([false as any])).toThrow();
+    expect(() => stmt.run([false as any])).toThrow(
+      expect.objectContaining({ code: "ERR_INVALID_ARG_TYPE" })
+    );
   });
 
   test("bind invalid object", function() {
     const db = new Database(":memory:");
     const stmt = db.prepare("select ?");
 
-    expect(() => stmt.run([new Date(0) as any])).toThrow();
+    expect(() => stmt.run([new Date(0) as any])).toThrow(
+      expect.objectContaining({ code: "ERR_INVALID_ARG_TYPE" })
+    );
   });
 });
 
@@ -248,7 +254,9 @@ describe("integer fidelity", function() {
     const db = new Database(":memory:");
     const stmt = db.prepare("select ? as num");
 
-    expect(() => stmt.one([num])).toThrow();
+    expect(() => stmt.one([num])).toThrow(
+      expect.objectContaining({ code: "ERR_VALUE_OUT_OF_RANGE" })
+    );
   });
 
   test("exceed 64-bit storage", function() {
@@ -259,7 +267,9 @@ describe("integer fidelity", function() {
     const db = new Database(":memory:");
     const stmt = db.prepare("select ? as num");
 
-    expect(() => stmt.one([num])).toThrow();
+    expect(() => stmt.one([num])).toThrow(
+      expect.objectContaining({ code: "ERR_VALUE_OUT_OF_RANGE" })
+    );
   });
 });
 
