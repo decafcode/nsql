@@ -11,7 +11,7 @@
     "headers": "node-gyp install --target=v12.13.1",
     "install": "node-gyp-build",
     "prebuild": "prebuildify --napi --strip",
-    "test": "jest"
+    "test": "jest -i"
   },
   "dependencies": {
     "node-gyp-build": "^4.2.0"
