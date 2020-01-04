@@ -143,7 +143,7 @@ napi_status nsql_statement_prepare(napi_env env, napi_value nclass, sqlite3 *db,
   sqlr = sqlite3_prepare_v2(db, sql, -1, &self->stmt, &sql_end);
 
   if (sqlr != SQLITE_OK) {
-    r = nsql_throw_sqlite_error(env, sqlr, self->db);
+    r = nsql_throw_sqlite_error(env, sqlr, db);
 
     goto end;
   }

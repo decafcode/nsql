@@ -76,6 +76,12 @@ describe("prepare", function() {
     expect(() => db.prepare("invalid")).toThrow();
   });
 
+  test("prepare error contains detailed diagnostics", function() {
+    const db = new Database(":memory:");
+
+    expect(() => db.prepare("invalid_xyz")).toThrowError(/invalid_xyz/);
+  });
+
   test("prepare trailing chars", function() {
     const db = new Database(":memory:");
 
