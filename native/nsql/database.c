@@ -232,6 +232,14 @@ static napi_value nsql_database_constructor(napi_env env,
     goto end;
   }
 
+  sqlr = sqlite3_extended_result_codes(self->db, 1);
+
+  if (sqlr != SQLITE_OK) {
+    r = nsql_throw_sqlite_error(env, sqlr, NULL);
+
+    goto end;
+  }
+
   /* Bind wrapper object */
 
   r = napi_wrap(env, nself, self, nsql_database_destructor, NULL, NULL);
