@@ -103,6 +103,14 @@ describe("run", function() {
       expect.objectContaining({ code: "ERR_INVALID_ARG_TYPE" })
     );
   });
+
+  test("run after database close is safe", function() {
+    const db = new Database(":memory:");
+    const stmt = db.prepare("select 1");
+
+    db.close();
+    stmt.run();
+  });
 });
 
 describe("run result", function() {
@@ -236,6 +244,17 @@ describe("one", function() {
 
     expect(result).toEqual({ a: null, b: 1234, c: "hello", d: 5678n });
   });
+
+  test("one() after database close is safe", function() {
+    const db = new Database(":memory:");
+    const stmt = db.prepare("select 1 as x");
+
+    db.close();
+
+    const result = stmt.one();
+
+    expect(result).toEqual({ x: 1n });
+  });
 });
 
 describe("integer fidelity", function() {
@@ -330,6 +349,18 @@ describe("all", function() {
     expect(result).toContainEqual({ num: 1, str: "one" });
     expect(result).toContainEqual({ num: 2, str: "two" });
     expect(result).toContainEqual({ num: 3, str: "three" });
+  });
+
+  test("all() after database close is safe", function() {
+    const db = new Database(":memory:");
+    const stmt = db.prepare("select 1 as x");
+
+    db.close();
+
+    const result = stmt.all();
+
+    expect(result).toHaveLength(1);
+    expect(result).toContainEqual({ x: 1n });
   });
 });
 
