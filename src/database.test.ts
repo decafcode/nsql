@@ -61,6 +61,12 @@ describe("exec", function() {
     );
   });
 
+  test("execute error contains detailed diagnostics", function() {
+    const db = new Database(":memory:");
+
+    expect(() => db.exec("invalid_xyz")).toThrowError(/invalid_xyz/);
+  });
+
   test("execute with semicolons", function() {
     const db = new Database(":memory:");
 

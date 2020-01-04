@@ -136,6 +136,14 @@ describe("run result", function() {
 });
 
 describe("one", function() {
+  test("one() after close does not crash the process", function() {
+    const db = new Database(":memory:");
+    const stmt = db.prepare("select 1");
+
+    stmt.close();
+    expect(() => stmt.one()).toThrow();
+  });
+
   test("returns undefined for empty result set", function() {
     const db = new Database(":memory:");
     const result = db.prepare("select 1 where 0").one();
@@ -289,6 +297,14 @@ describe("named binds", function() {
 });
 
 describe("all", function() {
+  test("all() after close does not crash the process", function() {
+    const db = new Database(":memory:");
+    const stmt = db.prepare("select 1");
+
+    stmt.close();
+    expect(() => stmt.all()).toThrow();
+  });
+
   test("return no rows", function() {
     const db = new Database(":memory:");
     const result = db.prepare("select 1 where 0").all();
