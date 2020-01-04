@@ -350,6 +350,12 @@ static napi_value nsql_database_exec(napi_env env, napi_callback_info ctx) {
 
   /* Validate and unpack params */
 
+  if (self->db == NULL) {
+    r = napi_throw_error(env, NULL, "Database handle is closed");
+
+    goto end;
+  }
+
   if (argc < 1) {
     r = napi_throw_type_error(env, "ERR_INVALID_ARG_TYPE",
                               "Expected an SQL parameter");
@@ -422,6 +428,12 @@ static napi_value nsql_database_prepare(napi_env env, napi_callback_info ctx) {
 
   assert(self != NULL);
   assert(self->class_ != NULL);
+
+  if (self->db == NULL) {
+    r = napi_throw_error(env, NULL, "Database handle is closed");
+
+    goto end;
+  }
 
   r = napi_get_reference_value(env, self->class_->stmt_class, &nclass_stmt);
 

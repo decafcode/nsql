@@ -76,6 +76,13 @@ describe("prepare", function() {
     db.prepare("select 1");
   });
 
+  test("prepare after close does not crash the process", function() {
+    const db = new Database(":memory:");
+
+    db.close();
+    expect(() => db.prepare("select 1")).toThrow();
+  });
+
   test("prepare type check", function() {
     const db = new Database(":memory:");
 
