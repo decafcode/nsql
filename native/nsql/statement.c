@@ -273,11 +273,11 @@ static void nsql_statement_reset(struct nsql_statement *self) {
     return;
   }
 
-  sqlr = sqlite3_reset(self->stmt);
+  (void)sqlite3_reset(self->stmt);
 
-  if (sqlr != SQLITE_OK) {
-    nsql_fatal_sqlite_error(sqlr);
-  }
+  /* sqlite3_reset() returns the last error encountered by this statement's
+     latest execution, not the success or failure of the reset operation
+     itself. */
 
   sqlr = sqlite3_clear_bindings(self->stmt);
 

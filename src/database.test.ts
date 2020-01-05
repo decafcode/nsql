@@ -1,3 +1,7 @@
+import { unlinkSync } from "fs";
+import { tmpdir } from "os";
+import path from "path";
+
 import Database from ".";
 
 describe("constructor", function() {
@@ -146,4 +150,39 @@ describe("dbName", function() {
 
     expect(() => ((db as any).dbFilename = "error")).toThrow();
   });
+});
+
+test("locking crash regression test", function() {
+  // This used to cause a mistaken abort() in response to an error being
+  // returned from sqlite3_reset(), but testing that we gracefully recover from
+  // a locking error is probably worthwhile regardless.
+
+  const filename = path.join(tmpdir(), "test.db");
+
+  try {
+    const db1 = new Database(filename);
+
+    db1.exec("create table x (y integer)");
+    db1.exec("begin");
+    db1.exec("insert into x values (1)");
+
+    const db2 = new Database(filename);
+
+    db2.exec("begin");
+
+    expect(() => db2.prepare("update x set y = 2").run()).toThrow(
+      expect.objectContaining({ code: "SQLITE_BUSY" })
+    );
+
+    db2.close();
+    db1.close();
+  } finally {
+    try {
+      unlinkSync(filename);
+    } catch (error) {}
+
+    try {
+      unlinkSync(filename + "-journal");
+    } catch (error) {}
+  }
 });
