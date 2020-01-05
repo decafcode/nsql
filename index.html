@@ -65,6 +65,7 @@
 				<a href="#decafcodesqlite" id="decafcodesqlite" style="color: inherit; text-decoration: none;">
 					<h1>@decafcode/sqlite</h1>
 				</a>
+				<img src="https://ci.appveyor.com/api/projects/status/github/decafcode/nsql?branch=master&svg=true">
 				<p>Synchronous N-API interface to SQLite.</p>
 				<p>The version of SQLite that is currently bundled with this extension is 3.30.1.</p>
 				<a href="#features" id="features" style="color: inherit; text-decoration: none;">
@@ -94,7 +95,9 @@
 				<p>To use @decafcode/sqlite from your project simply install it using your
 				preferred package manager:</p>
 				<pre><code>$ <span class="hljs-built_in">npm</span> install --save @decafcode/sqlite</code></pre><p>or</p>
-				<pre><code>$ yarn <span class="hljs-keyword">add</span><span class="bash"> @decafcode/sqlite</span></code></pre><p>TypeScript definitions with TSDoc comments are included in the package.</p>
+				<pre><code>$ yarn <span class="hljs-keyword">add</span><span class="bash"> @decafcode/sqlite</span></code></pre><p>TypeScript definitions with TSDoc comments are included in the package. You may
+					also consult the <a href="https://decafcode.github.io/nsql-doc/">online copy</a> of the
+				project&#39;s Typedoc documentation output.</p>
 				<a href="#contributing" id="contributing" style="color: inherit; text-decoration: none;">
 					<h1>Contributing</h1>
 				</a>
@@ -121,11 +124,9 @@
     objects.push(<span class="hljs-keyword">new</span> Employee(row.id, row.name));
   }
 
-  <span class="hljs-keyword">return</span> objects;
-
   db.close();
 
-  <span class="hljs-keyword">return</span> result;
+  <span class="hljs-keyword">return</span> objects;
 }</code></pre>
 				<a href="#license" id="license" style="color: inherit; text-decoration: none;">
 					<h2>License</h2>
