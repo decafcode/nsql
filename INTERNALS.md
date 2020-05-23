@@ -16,7 +16,8 @@ environment can be set up as follows:
    $ git submodule init
    $ git submodule update
    ```
-2. Run `npm install` to download dependencies and compile the native code. You
+2. Run `npm install` to download dependencies.
+3. Run `npx node-gyp build` to force local compilation of the native code. You
    will need to have the following development tools installed on your local
    machine:
    - Python 3 (for `node-gyp`)
@@ -31,12 +32,12 @@ environment can be set up as follows:
    - On macOS:
      - The XCode Command Line Tools, which can be installed by typing
        `xcode-select --install` at a command-line prompt.
-3. Run `npm test` to run the test suite and confirm that your build works
+4. Run `npm test` to run the test suite and confirm that your build works
    correctly.
-4. Run `npm run headers` to download our target version of the Node.js SDK to
+5. Run `npm run headers` to download our target version of the Node.js SDK to
    `node-gyp`'s cache. This cache is located in your home directory, so you
    should only need to do this once.
-5. Open your Git checkout in Visual Studio Code and accept all of the workspace
+6. Open your Git checkout in Visual Studio Code and accept all of the workspace
    extension recommendations.
 
 This project currently uses version 12.13.1 of the Node.js SDK for Visual Studio
