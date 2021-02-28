@@ -4,7 +4,7 @@
 
 Synchronous N-API interface to SQLite.
 
-The version of SQLite that is currently bundled with this extension is 3.31.1.
+The version of SQLite currently bundled with this extension is 3.34.1.
 
 # Features
 
