@@ -4,7 +4,7 @@
       "name": "Linux",
       "includePath": [
         "${env:HOME}/.cache/node-gyp/12.13.1/include/node",
-        "${workspaceFolder}/native/napi",
+        "${workspaceFolder}/native/nsql",
         "${workspaceFolder}/native/sqlite"
       ],
       "defines": ["NAPI_EXPERIMENTAL"],
