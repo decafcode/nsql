@@ -3,11 +3,11 @@
     {
       "name": "Linux",
       "includePath": [
-        "${env:HOME}/.cache/node-gyp/12.13.1/include/node",
+        "${env:HOME}/.cache/node-gyp/12.17.0/include/node",
         "${workspaceFolder}/native/nsql",
         "${workspaceFolder}/native/sqlite"
       ],
-      "defines": ["NAPI_EXPERIMENTAL"],
+      "defines": ["NAPI_VERSION=6"],
       "compilerPath": "/usr/bin/gcc",
       "cStandard": "c11",
       "cppStandard": "c++17"

@@ -41,18 +41,20 @@ environment can be set up as follows:
 7. Open your Git checkout in Visual Studio Code and accept all of the workspace
    extension recommendations.
 
-This project currently uses version 12.13.1 of the Node.js SDK for Visual Studio
-Code's C/C++ code completion. `node-gyp-build` will download and compile against
-the SDK version that corresponds to your local machine's global Node.js
-installation (or your currently-selected environment in `nvm`, if applicable).
-This is a little unfortunate from a build predictability standpoint, but N-API
-aims to maintain forward binary compatibility with all future releases of
-Node.js, so the exact SDK version is less important than it is for extensions
-that use the traditional Node.js C++ extension API.
+This project currently uses version 12.17.0 of the Node.js SDK for Visual Studio
+Code's C/C++ code completion. This is the earliest version of NodeJS' 12.x
+series releases that supports an `NAPI_VERSION` of 6 or greater, which we
+require for bigint support. Earlier versions of the 12.x series support the
+BigInt entry points in their current form, however this API had not yet been
+declared stable in those releases.
 
-That being said, we do currently rely on un-stabilized entry points in N-API,
-specifically BigInt support. Hopefully these interfaces will soon be declared
-stable in their current state.
+`node-gyp-build` will download and compile against the SDK version that
+corresponds to your local machine's global Node.js installation (or your
+currently-selected environment in `nvm`, if applicable). This is a little
+unfortunate from a build predictability standpoint, but N-API aims to maintain
+forward binary compatibility with all future releases of Node.js, so the exact
+SDK version is less important than it is for extensions that use the traditional
+Node.js C++ extension API.
 
 The NSQL repository includes configuration for Visual Studio Code to integrate
 with our preferred source code formatting tools and their default formatting

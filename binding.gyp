@@ -61,7 +61,7 @@
         'sqlite'
       ],
       'defines': [
-        'NAPI_EXPERIMENTAL'
+        'NAPI_VERSION=6'
       ],
       'include_dirs': [
         'native/sqlite',
