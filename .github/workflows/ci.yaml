@@ -1,0 +1,91 @@
+---
+name: Continuous Integration
+on:
+  pull_request: {}
+  push:
+    tags:
+      - "*"
+env:
+  NODE_VERSION: 12.17.0
+jobs:
+  build:
+    strategy:
+      matrix:
+        os:
+          - macos-10.15
+          - ubuntu-20.04
+          - windows-2019
+    name: "Build ${{ matrix.os }}"
+    runs-on: "${{ matrix.os }}"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: Prepare node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "${{ env.NODE_VERSION }}"
+      - name: Install dependencies and compile local build
+        run: npm ci
+      - name: Check source code formatting
+        run: npm run chkfmt
+      - name: Test local build
+        run: npm test
+      - name: Compile prebuild
+        run: npm run prebuild
+      - name: Test prebuild
+        run: npm test
+        env:
+          PREBUILDS_ONLY: "1"
+      - name: Emit artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: "prebuild-${{ matrix.os }}"
+          path: prebuilds
+
+  publish:
+    name: Publish release
+    needs: build
+    runs-on: ubuntu-20.04
+    if: "${{ startsWith(github.ref, 'refs/tags/') }}"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: Prepare node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "${{ env.NODE_VERSION }}"
+          registry-url: "https://registry.npmjs.org"
+      # Skip install scripts so that we do not needlessly compile native code
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+      - name: Pull Darwin artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: prebuild-macos-10.15
+          path: prebuilds
+      - name: Pull Linux artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: prebuild-ubuntu-20.04
+          path: prebuilds
+      - name: Pull Windows artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: prebuild-windows-2019
+          path: prebuilds
+      - name: Build API documentation
+        run: npm run docs
+      - name: Publish API documentation
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: "${{ secrets.GITHUB_TOKEN }}"
+          commit_message: "${{ github.event.head_commit.message }}"
+          publish_dir: ./docs
+      - name: Publish to NPM
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: "${{ secrets.NPM_TOKEN }}"
