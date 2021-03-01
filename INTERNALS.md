@@ -50,11 +50,21 @@ declared stable in those releases.
 
 `node-gyp-build` will download and compile against the SDK version that
 corresponds to your local machine's global Node.js installation (or your
-currently-selected environment in `nvm`, if applicable). This is a little
-unfortunate from a build predictability standpoint, but N-API aims to maintain
-forward binary compatibility with all future releases of Node.js, so the exact
-SDK version is less important than it is for extensions that use the traditional
-Node.js C++ extension API.
+currently-selected environment in `nvm`, if applicable). This build may be built
+explicitly, or it may automatically execute at `npm install` time in the event
+that this package is installed on an OS and processor combination for which no
+pre-built binary is available.
+
+The npm `prebuild` script can also be used to create a prebuild for the current
+OS and processor. Prebuilds for several architectures are included in each npm
+release and relieve most users of the need to compile this module's native code
+for their local environment. Prebuilds are configured target a specific version
+of NodeJS, and are usually built as part of the CI pipeline that prepares new
+releases for upload to npm. It should not normally be necessary to compile a
+prebuild manually.
+
+Consult the [prebuildify](https://github.com/prebuild/prebuildify) project's
+website for more information about the prebuild mechanism.
 
 The NSQL repository includes configuration for Visual Studio Code to integrate
 with our preferred source code formatting tools and their default formatting

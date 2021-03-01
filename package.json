@@ -10,7 +10,7 @@
     "docs": "typedoc --out docs/ --readme none src/index.d.ts",
     "headers": "node-gyp install --target=v12.17.0",
     "install": "node-gyp-build",
-    "prebuild": "prebuildify --napi --strip",
+    "prebuild": "prebuildify --napi --strip --target node@12.17.0",
     "test": "jest -i"
   },
   "dependencies": {
