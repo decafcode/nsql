@@ -2,7 +2,7 @@ import { unlinkSync } from "fs";
 import { tmpdir } from "os";
 import path from "path";
 
-import Database from ".";
+import Database, { Statement } from ".";
 
 describe("constructor", function() {
   test("open transient in-memory database", function() {
@@ -170,9 +170,18 @@ test("locking crash regression test", function() {
 
     db2.exec("begin");
 
-    expect(() => db2.prepare("update x set y = 2").run()).toThrow(
-      expect.objectContaining({ code: "SQLITE_BUSY" })
-    );
+    expect(() => {
+      let stmt: Statement | undefined;
+
+      try {
+        stmt = db2.prepare("update x set y = 2");
+        stmt.run();
+      } finally {
+        if (stmt !== undefined) {
+          stmt.close();
+        }
+      }
+    }).toThrow(expect.objectContaining({ code: "SQLITE_BUSY" }));
 
     db2.close();
     db1.close();
