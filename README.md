@@ -1,7 +1,5 @@
 # @decafcode/sqlite
 
-<img src="https://ci.appveyor.com/api/projects/status/github/decafcode/nsql?branch=master&svg=true">
-
 Synchronous N-API interface to SQLite.
 
 The version of SQLite currently bundled with this extension is 3.34.1.
