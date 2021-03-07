@@ -1,6 +1,6 @@
 /**
- * SQLite NAPI binding. The {@link Database} class is the default export for
- * this module.
+ * SQLite NAPI binding. The Database class (referred to as "`default`" on the
+ * API documentation page) is the default export for this module.
  *
  * @module SQLite
  */

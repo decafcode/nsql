@@ -7,7 +7,7 @@
   "author": "Decaf Code <git@decafcode.org>",
   "license": "MIT",
   "scripts": {
-    "docs": "typedoc --out docs/",
+    "docs": "typedoc --out docs/ src/index.d.ts",
     "headers": "node-gyp install --target=v12.13.1",
     "install": "node-gyp-build",
     "prebuild": "prebuildify --napi --strip",
@@ -26,8 +26,7 @@
     "prebuildify": "^3.0.4",
     "prettier": "^1.19.1",
     "ts-jest": "^26.0.0",
-    "typedoc": "^0.15.8",
-    "typedoc-plugin-external-module-name": "^2.1.0",
+    "typedoc": "^0.20.30",
     "typescript": "^3.9.3"
   }
 }
