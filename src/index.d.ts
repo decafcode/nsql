@@ -29,8 +29,8 @@ export type SqlValue = null | number | bigint | string | ArrayBuffer;
 
 /**
  * A collection of bind parameters suitable for passing to a prepared statement.
- * This can either be an array of `SqlValue`s whose values all conform to the
- * `SqlValue` definition.
+ * This can either be an array of `SqlValue`s or an object whose values all
+ * conform to the `SqlValue` definition.
  *
  * If an array is supplied then its elements will be bound to the statement's
  * positional parameters (or to named parameters in the order in which they
