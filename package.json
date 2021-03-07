@@ -7,7 +7,7 @@
   "author": "Decaf Code <git@decafcode.org>",
   "license": "MIT",
   "scripts": {
-    "docs": "typedoc --out docs/ src/index.d.ts",
+    "docs": "typedoc --out docs/ --readme none src/index.d.ts",
     "headers": "node-gyp install --target=v12.13.1",
     "install": "node-gyp-build",
     "prebuild": "prebuildify --napi --strip",
