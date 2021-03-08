@@ -1,6 +1,6 @@
 {
   "name": "@decafcode/sqlite",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Synchronous N-API interface to SQLite",
   "main": "src/index.js",
   "repository": "https://github.com/decafcode/nsql",
