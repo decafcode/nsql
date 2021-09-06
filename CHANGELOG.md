@@ -1,3 +1,8 @@
+# v2.3.0
+
+- Update SQLite to v3.36.0
+- Apply dev dependency updates from npm audit
+
 # v2.2.0
 
 - Update SQLite to v3.34.1
