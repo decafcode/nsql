@@ -1,3 +1,8 @@
+# v2.3.1
+
+- Add release checklist to PR template
+- Update SQLite version number in README
+
 # v2.3.0
 
 - Update SQLite to v3.36.0
