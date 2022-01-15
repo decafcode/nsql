@@ -1,3 +1,9 @@
+# v2.4.0
+
+- Update SQLite to v3.37.1
+- Update node-gyp dependency to v6.1.0
+- Apply npm audit
+
 # v2.3.1
 
 - Add release checklist to PR template
