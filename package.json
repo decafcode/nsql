@@ -13,6 +13,7 @@
     "clangd": "node-gyp configure -- -f compile_commands_json",
     "docs": "typedoc --out docs/ --readme none src/index.d.ts",
     "install": "node-gyp-build",
+    "make": "make -C build/",
     "prebuild": "prebuildify --napi --strip",
     "test": "jest -i"
   },
