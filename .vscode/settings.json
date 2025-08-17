@@ -1,6 +1,6 @@
 {
   "[c]": {
-    "editor.defaultFormatter": "xaver.clang-format"
+    "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd"
   },
   "[javascript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"

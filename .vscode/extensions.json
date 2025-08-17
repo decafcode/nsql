@@ -1,7 +1,6 @@
 {
   "recommendations": [
     "esbenp.prettier-vscode",
-    "llvm-vs-code-extensions.vscode-clangd",
-    "xaver.clang-format"
+    "llvm-vs-code-extensions.vscode-clangd"
   ]
 }
