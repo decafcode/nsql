@@ -1,7 +1,5 @@
----
-name: Continuous Integration
+name: Build
 on:
-  pull_request: {}
   push:
     tags:
       - "*"
@@ -10,8 +8,8 @@ jobs:
     strategy:
       matrix:
         os:
+          - macos-13
           - macos-15
-          - macos-15-arm64
           - ubuntu-24.04
           - windows-2025
     name: "Build ${{ matrix.os }}"
@@ -25,15 +23,15 @@ jobs:
         uses: actions/setup-node@v4.4.0
         with:
           node-version-file: .nvmrc
-      - name: Install dependencies and compile local build
-        run: npm ci
+      # Don't compile anything yet, prebuild will do a clean rebuild anyway so
+      # compiling anything here is just a waste of time.
+      - name: Install dependencies only
+        run: npm ci --ignore-scripts
       - name: Check source code formatting
         run: npm run chkfmt
-      - name: Test local build
-        run: npm test
-      - name: Compile prebuild
+      - name: Compile native code as a prebuild
         run: npm run prebuild
-      - name: Test prebuild
+      - name: Run tests
         run: npm test
         env:
           PREBUILDS_ONLY: "1"
@@ -47,7 +45,6 @@ jobs:
     name: Publish release
     needs: build
     runs-on: ubuntu-24.04
-    if: "${{ startsWith(github.ref, 'refs/tags/') }}"
     steps:
       - name: Checkout
         uses: actions/checkout@v4.3.0
@@ -64,12 +61,12 @@ jobs:
       - name: Pull Darwin x86 artifact
         uses: actions/download-artifact@v5.0.0
         with:
-          name: prebuild-macos-15
+          name: prebuild-macos-13
           path: prebuilds
       - name: Pull Darwin ARM64 artifact
         uses: actions/download-artifact@v5.0.0
         with:
-          name: prebuild-macos-15-arm64
+          name: prebuild-macos-15
           path: prebuilds
       - name: Pull Linux artifact
         uses: actions/download-artifact@v5.0.0
@@ -86,7 +83,7 @@ jobs:
       - name: Publish API documentation
         uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e # v4.0.0
         with:
-          github_token: "${{ secrets.GITHUB_TOKEN }}"
+          github_token: "${{ github.token }}"
           commit_message: "${{ github.event.head_commit.message }}"
           publish_dir: ./docs
       - name: Publish to NPM
