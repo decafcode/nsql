@@ -15,12 +15,14 @@
     "install": "node-gyp-build",
     "make": "make -C build/",
     "prebuild": "prebuildify --napi --strip",
+    "release": "release-it",
     "test": "jest -i"
   },
   "dependencies": {
     "node-gyp-build": "^4.8.4"
   },
   "devDependencies": {
+    "@release-it/keep-a-changelog": "^7.0.0",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.3.0",
     "clang-format": "^1.8.0",
@@ -28,6 +30,7 @@
     "node-gyp": "^11.3.0",
     "prebuildify": "^6.0.1",
     "prettier": "^1.19.1",
+    "release-it": "^19.0.4",
     "ts-jest": "^29.4.1",
     "typedoc": "^0.28.10",
     "typescript": "^5.9.2"
