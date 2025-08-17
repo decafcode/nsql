@@ -11,6 +11,7 @@ and this project adheres to
 ### Changed
 
 - Adopt keepachangelog.com CHANGELOG format
+- Update SQLite to v3.50.3
 
 ## [2.4.0] - 2022-01-15
 
