@@ -16,9 +16,7 @@ environment can be set up as follows:
    $ git submodule init
    $ git submodule update
    ```
-2. Run `npm install` to download dependencies.
-3. Run `npx node-gyp configure` to prepare a native-code build environment.
-4. Run `npx node-gyp build` to force local compilation of the native code. You
+2. Run `npm install` to download dependencies and compile the native code. You
    will need to have the following development tools installed on your local
    machine:
    - Python 3 (for `node-gyp`)
@@ -33,35 +31,23 @@ environment can be set up as follows:
    - On macOS:
      - The XCode Command Line Tools, which can be installed by typing
        `xcode-select --install` at a command-line prompt.
-5. Run `npm test` to run the test suite and confirm that your build works
+3. Run `npm test` to run the test suite and confirm that your build works
    correctly.
-6. Run `npm run headers` to download our target version of the Node.js SDK to
-   `node-gyp`'s cache. This cache is located in your home directory, so you
-   should only need to do this once.
-7. Open your Git checkout in Visual Studio Code and accept all of the workspace
+4. Run `npm run clangd` to generate a `compile_commands.json` in the
+   `build/Debug` subdirectory. clangd uses the contents of this file to provide
+   accurate contextual assistance and live error messages from within Visual
+   Studio Code or any other text editor with a clangd LSP integration. You will
+   need to re-run this command if the `build` subdirectory gets deleted or
+   recreated, or if the contents of `binding.gyp` change.
+5. Open your Git checkout in Visual Studio Code and accept all of the workspace
    extension recommendations.
 
-This project currently uses version 12.17.0 of the Node.js SDK for Visual Studio
-Code's C/C++ code completion. This is the earliest version of NodeJS' 12.x
-series releases that supports an `NAPI_VERSION` of 6 or greater, which we
-require for bigint support. Earlier versions of the 12.x series support the
-BigInt entry points in their current form, however this API had not yet been
-declared stable in those releases.
-
-`node-gyp-build` will download and compile against the SDK version that
-corresponds to your local machine's global Node.js installation (or your
-currently-selected environment in `nvm`, if applicable). This build may be built
-explicitly, or it may automatically execute at `npm install` time in the event
-that this package is installed on an OS and processor combination for which no
-pre-built binary is available.
-
-The npm `prebuild` script can also be used to create a prebuild for the current
-OS and processor. Prebuilds for several architectures are included in each npm
-release and relieve most users of the need to compile this module's native code
-for their local environment. Prebuilds are configured target a specific version
-of NodeJS, and are usually built as part of the CI pipeline that prepares new
-releases for upload to npm. It should not normally be necessary to compile a
-prebuild manually.
+The npm `prebuild` script is used to create a prebuild for the current OS and
+processor. Prebuilds for several architectures are included in each npm release
+and relieve most users of the need to compile this module's native code for
+their local environment. Prebuilds are usually built as part of the CI pipeline
+that prepares new releases for upload to npm. It should not normally be
+necessary to compile a prebuild manually.
 
 Consult the [prebuildify](https://github.com/prebuild/prebuildify) project's
 website for more information about the prebuild mechanism.
