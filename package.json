@@ -10,8 +10,8 @@
     "chkfmt": "npm run chkfmt:c && npm run chkfmt:js",
     "chkfmt:c": "clang-format --dry-run -Werror native/nsql/*.c native/nsql/*.h",
     "chkfmt:js": "prettier -c ./src/**",
+    "clangd": "node-gyp configure -- -f compile_commands_json",
     "docs": "typedoc --out docs/ --readme none src/index.d.ts",
-    "headers": "node-gyp install --target=v12.17.0",
     "install": "node-gyp-build",
     "prebuild": "prebuildify --napi --strip",
     "test": "jest -i"
