@@ -68,7 +68,7 @@ describe("exec", function() {
   test("execute error contains detailed diagnostics", function() {
     const db = new Database(":memory:");
 
-    expect(() => db.exec("invalid_xyz")).toThrowError(/invalid_xyz/);
+    expect(() => db.exec("invalid_xyz")).toThrow(/invalid_xyz/);
   });
 
   test("execute with semicolons", function() {
@@ -112,7 +112,7 @@ describe("prepare", function() {
   test("prepare error contains detailed diagnostics", function() {
     const db = new Database(":memory:");
 
-    expect(() => db.prepare("invalid_xyz")).toThrowError(/invalid_xyz/);
+    expect(() => db.prepare("invalid_xyz")).toThrow(/invalid_xyz/);
   });
 
   test("prepare trailing chars", function() {
